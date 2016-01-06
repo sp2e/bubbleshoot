@@ -1,0 +1,274 @@
+/*
+total page height is 738 pixels
+it contains: 
+  top_bar: 70px, 
+  game:; 620px, 
+  footer_bar: 48px
+the 738 px should fit within a 1024x768 display,
+and even allow for a browser taskbar
+ */
+ //this syntax can be used as : single line comment {}
+ /*
+ the // above, actually makes the css compiler search 
+ for the next, SINGLE command.
+ the {} above makes sure that theres actually is
+ a command for the css compiler to find.
+ Otherwise, the compiler would comment out the next line,
+ which if a command, whould be commented out!
+ */
+body
+{
+	margin: 0;
+}
+#page
+{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 1000px;
+	height: 738px;
+}
+#top_bar
+{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 1000px;
+	height: 70px;
+	background-color: #369;
+	color: #fff;
+}
+.top_bar_box
+{
+	font-size: 24px;
+	line-height: 60px;
+	float: left;
+	margin-left: 20px;
+	width: 260px;
+}
+
+.top_bar_box div
+{
+	float: left;
+	margin-right: 20px;
+}
+
+#game
+{
+	position: absolute;
+	left: 0px;
+	top: 70px;
+	width: 1000px;
+	height: 620px;
+	background-color: #fff;
+	clip: auto;
+	overflow: hidden; /* means that bubbles in game 
+	will never accidentally desplay over the header or footer
+	*/
+}
+#board
+{
+	position: absolute;
+	left: 120px;
+	top: 0;
+	width: 760px;
+	height: 620px;
+}
+
+#footer_bar
+{
+	position: absolute;
+	left: 0;
+	top: 690px;
+	width: 1000px;
+	height: 48px;
+	background-color: #369;
+}
+.dialog
+{
+	position: absolute;
+	left: 300px;
+	top: 110px;
+	height: 460px;
+	width: 320px;
+	background-color: #369;
+	border-radius: 30px;
+	border: 2px solid #99f;
+	padding: 20px 50px;
+	color: #fff;
+	text-align: center;
+	display: none;
+}
+.dialog h2
+{
+	font-size: 28px;
+	color: #fff;
+	margin: 20px 0 20px;
+}
+.but_start_game
+{
+	position: absolute;
+	left: 100px;
+	top: 360px;
+	height: 60px;
+	width: 200px;
+	background-color: #f00;
+	cursor: pointer;
+	border-radius: 15px;
+	border: 2px solid #f66;
+	font-size: 28px;
+	line-height: 60px;
+	font-weight: bold;
+	text-shadow: 0px 1px 1px #f99;
+}
+.but_start_game:hover
+{
+	background-color: #f33;
+}
+#start_game
+{
+	display: block;
+}
+#bubbles_remaining
+{
+	position: absolute;
+	left: 479px;
+	top: 520px;
+	width: 50px;
+	font-size: 26px;
+	font-weight: bold;
+	color: #000;
+	text-align: center;
+}
+#final_score
+{
+	margin: 26px 0;
+}
+
+#end_game_message span
+{
+	margin-right: 20px;
+	font-size: 24px;
+}
+
+#level_complete,#level_failed,#new_high_score
+{
+	font-size: 36px;
+	color: #fff;
+}
+
+/*
+the follwoing uses the css transition method 
+to cause enable the button to slide around the screen.
+If this code is activated, 
+one can type in the following into the console:
+$(".but_start_game").css("top",100)
+...and the button will slide upwards
+Note, this css method is performed by the browser,
+and thus, graphics capabilities of the CPU come into play in its execution,
+and thus relieve the burdon on any javascript code execution.
+*/
+/*
+.button
+{
+	/*
+	1) all: applies the transition to every css property, think of it as a wildcard.
+	2) .8s sets the duration of the transition, in seconds
+	3) third value is the easing: ease-in-out produces a smooth transition with an initial acceleration an ending deceleration.
+	4) 1s causes a delay of 1 second before the animation runs.
+	5) The last three lines provide the same specification 
+	but with vendor specific prefixed for cross-browser support. 
+	These are needed for older browsers; newer browsers use the unprefixed version
+	once the tag definition is considered to be stable
+	*/
+	/*
+	transition: all .8s ease-in-out 1s;
+	-moz-transition: all .8s ease-in-out 1s;
+	-webkit-transition: all .8s ease-in-out 1s;
+	-ms-transition: all .8s ease-in-out 1s;
+}
+
+NOTE FOR BELOW:
+transition: all .3s ease-in-out;
+could be used define transform method with the above parameters.
+But method used below allows seperate parameter definitions .
+*/
+.button
+{
+	transition: background-color .3s ease-in-out, transform .2s ease-in-out ;
+	-moz-transition: background-color .9s ease-in-out, transform .2s ease-in-out ;
+	-webkit-transition: background-color .3s ease-in-out, transform .2s ease-in-out ;
+	-ms-transition: background-color .3s ease-in-out, transform .2s ease-in-out ;
+}
+.button:hover
+{
+	background-color: #900 ;	
+	transform: scale(1.1);
+	-moz-transform: scale(1.1);
+	-webkit-transform: scale(1.1);
+	-ms-transform: scale(1.1);
+}
+/*
+EASING:
+Other types of easing include ease, linear, or just ease-in or ease-out.
+All actually are aliases for specific definitions of CUBIC-BEZIER, 
+which you can use TO INDICATE ANY TRANSITION CURVE you like.,
+
+Bezier curves
+Cubic Bézier curves
+
+Four points P0, P1, P2 and P3 in the plane or in higher-dimensional space define a cubic Bézier curve. 
+The curve starts at P0 going toward P1 and arrives at P3 coming from the direction of P2. 
+Usually, it will not pass through P1 or P2; 
+these points are only there to provide directional information. 
+The distance between P0 and P1 determines "how far" and "how fast" the curve moves towards P1 before turning towards P2.
+
+For CSS, on a graph, P0 always is at 0,0, and P3 = 1,1 .
+the line from P0 to P1 will define the tangent of the curve at P0,
+and P2 likewise will define the tangent at P3.
+
+http://cubic--bezier.com/  
+allows you to tweak values and watch the animation to see how the  number translate to a movement transition.
+*/
+/*
+BASIC CSS TRANSFORMATIONS.
+also allow manipulations of an objext's shape.
+skewing, rotating, and distorting , in 2 or 3 dimensions, are possible.
+
+the "scale" transform is used above.
+
+For further information, refer to:
+https://developer.mozilla.org/en-US/docs/Web/CSS/transform/ ;
+*/
+/*
+CSS transitions vs Javascript
+CSS allows smoother effects.
+However, CSS transformations and transitions work will for user-interface manipulation
+or for relatively simple straight-line movement, 
+but they dont provide the flexibility for a lot of in-game action, 
+as explained next.
+ 
+disadvantages
+- more cumbersome the more animations that are added to a single element
+- also often need to retain the post CSS definition if an animation is to continue for one or more transitions
+- CSS  movement transition is a straight line. 
+Movement along a curve would have to be broken into series of straight lines.
+- once set in motion, CSS transitions are impossible to interrogate and change.
+the Browser handles the transition and updates the element's position as soon as you set the value in CSS.
+The element may be rendered halfway to its destiniation due to the transition,
+but the DOM will report that it's already done moving. 
+In this case, it is impossible to interrogate an element for its current position.
+*/
+
+.game_canvas
+/*
+This CSS definition is not redundant with the dynamic 
+definition specified in BubbleShoot.Renderer().
+The former defines the canvas element size.
+The CSS definition 
+"establishes the size of the canvas as it will appear on the page".
+*/
+{
+	width: 1000px;
+	height: 620px;
+}

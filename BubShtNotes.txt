@@ -1,0 +1,624 @@
+
+to do: refactor code = basically per Crockford
+  jan 4, 16: found another error in color types forming the next current bubble.
+      I needed to find the index of the array of colors left, for removing successive colors from it.
+      ALSO: globalized this array, so as to reduce numbers of loop iterations.
+  jan 2, 16: renderer.js refactored
+              sounds.js = already good
+  TODO          sprite.js refactored, but noticed newBubble of color not remaining on board
+              ui.js refactored
+
+  dec 28: board.js refactored
+          bubble.js === good
+          collision-detector.js refactored
+          kaboom.js refactored
+
+
+  dec 14; game.js refactored
+
+dec 14: decreases now only by 2 per level, after level 4 is reached.
+to do: numBubbles.  decreases by 5 per level.  run out of practical levels too early.  fix=exercise.
+
+dec 14: getNextBubbleType()  works fine1  also, bubbles being shot now squeeze thru the tighter spaces again.
+im guessing it might have been a conflict with the bubbles variable.... 
+dec 13: looks like color check working in getNextBubble: now make it its own routine.
+
+dec 9: 
+tried to  put color check for getNextBubble in bubble.js, but cant without changing some scopes.
+so, next: must try to get it working in getNextBubble routine.
+
+dec 4: still:
+error in bubble js that is keeping color check for next bubble from working right.
+
+Nov 30. unsolved:
+trying to insure that if a certain bubble color gets totally eliminated from the board,
+with less than , say , 2 rows left, 
+then that bubble color will not come up for the shooter bubble (curBubble).
+
+in this process, a new case developed.
+a non-collision case would cause the new bubble to get put permanently in the left corner of the top row.
+This was due to changing ...Bubble.create()  to
+Bubble.create(null,null,type), in order to create a new bubble with a certain type.
+Solution was to instead use:
+Bubble.create(undefined,undefined,type);
+
+Note have to solve anew, as the bubbles variable is not limited to just the bubbles remaining on the board,
+but instead, contains all bubbles that have been on the board, popped or not.
+
+Nov 10, 2015
+end of game logic not working, must fix
+ something to do with endGame function not being executed?
+high score not being saved by localStorage must fix.   
+BOTH OF THE ABOVE FIXED: 
+1) js code was referencing end_game (and another ID too) as a CSS Class instead of an ID.
+2)  high_score CSS ID was missing the underline, per "high score", 
+3)  for the author's game site, my high score was too big for the display!! 
+I had to widen it for it to display. CSS class name: class="top_bar_box".
+So i widened it for my code too.
+
+in game.js, clickGameScreen function, for collisions not causing orphans
+  the score is updating before the collision occurs.
+FIXED: extended constant delay,, and added a delay per "POPPED" bubble.
+
+in ...kaboom.js file:
+  jQuery.fn.kaboom = function(settings){
+    var elm = this; //this was in requestAnimationFrame stuff (ch 7), but not in mine!
+  i have it activated right now...no diff noted in very quick check.
+
+ch7:
+confused as to why , for high score, its id for label can be same as for the "Score" label.
+
+
+ch 6 complete.
+
+July 14, early am, start on p57,after collision-detector.js file
+
+Save /retrieve data on a server for website.
+  method 1) AJAX:
+	send ajax request to  server with $.ajax call in jQuery,
+	reference (http://api.jquery.com/  :
+
+	$.ajax({
+		url : "save_data.php",
+		data : "high_score =" + highScore,
+		type : "POST",
+		complete : function(data){
+			console.log(data);
+		}
+	});
+        
+	so, url:  sets the URL targer for the request
+	    data: data to send
+	    type: type of request
+	    complete: function to run after the request completes
+	there are many other properties that can be set.
+
+  method 2) WebSockets
+	if want to learn how they work at a lower level, can start with 
+	https://developer.mozilla.org/en/docs/Websockets/
+
+	whereas AJAX sets up a call-and-response relationship between them. 
+both sides constantly listen for communication. So this is better for, say, lots of small data transactions. good for multiplayer gaming environments. 
+	before websockets, main way to update game state elements shared by multiple clients, such as player avatars within an environment, was to continuously poll the server with AJAX and check for updates.
+	Use library. mainstream browsers have ever-improving support. libraries will also have fallback to AJAx. Socket.IO (http://socket.io/) is one of most popular.
+	exmple:
+	var socket = io.connect("http://localhost");
+		socket.emit("new_high_score", {
+			high_score : highScore
+		});
+	});
+	so, socketemit sends the highScore value as an event named new_high_score.
+	check the library for a backend component that matches your server environment.  
+	libraries for most platforms are readily available, whether you're using 		Node.js, .NEt, OR Java .
+
+WEB WORKERS.
+To process certain data outside your main game program. Can use Web workers.
+Javascript in a browser generally considered a single-threaded environment.
+Workers allow code to run in separate thread.
+Workers can be dedicated or shared, but dedicated usually most useful, especially while support for Workders is being developed across browsers.
+Have no access to DOM or browser window.
+Operate in own scope, so need to pass data explicitly and then retrieve the result when complete.
+Not all major browsers support Web Workers well enough to make it reliable.
+EXAMP:
+	"var worker = new Worker("work.js");
+starts new worker, which runs the script inside work.js
+	worker.postMessage();
+worker runs when you send it a message vie postMessage, which can contain a JS script object or be empty.
+	worker.addEventListener("message", function(e) {
+		console.log(e.data);
+	}, false);
+handles reponses by adding event listeners. e contains the data that worker sent back. The event to listen to, labeled "message", is any valid string.  Therefore , a worker could send back different reponses in different circumstances, or it could just keep working and sending messages.
+
+inside the worker, the file work.js could contain, with worker referring to itself as "this" or "self':
+	self.addEventListener("message", function(e) {
+		self.postMessage({
+			message : "I'm done now"
+		});
+	}, false);
+
+WEBGL:
+ provides 3D capabilities and can be used also for faster 2D needs.
+modern graphics cards can take advantage of them.
+  off the shelf libraries enable 2D rendering in WebGL. 
+one such lib is Pixi.js (http://www.pixijs.com/), which also provides a fallback to the canvas.
+  not ready for mass-market development.
+
+
+instantiate a 3D context (webgl is sometimes retrieved as "experimental-webgl":
+var context = canvas.get Context("webgl")
+	|| canvas.getcontext("experimental-webgl");
+
+HTML::  Fullscreen API  :
+can be used to avoid interruptions, such as from FB, email, instant messaging, etc.
+For security reasons you need to run this code inside a user generated event handler, that is, you will usually make a button for the player to click or specify a key for them to press to activate fullscreen mode.
+ESC will enable return to regular screen mode.
+Can apply Fullscreen mode to a single element inside the DOM.
+
+to implement:
+if(document.body.requestfullScreen) {
+	document.body.requestFullScreen();
+}else if{document.body.mozRequestFullScreen) {
+	document.body.mozRequestFullScreen();
+}else if{document.body.webkitRequestFullScreen) {
+	document.body.webkit.RequestFullScreen();
+}else if{document.body.msRequestFullScreen) {
+	document.body.msRequestFullScreen();
+}
+can apply the above to Bubbleshooter. add a new toolbar button that 
+adds the following code (in ui.js):s
+if(document.body.requestfullScreen) {
+	$("#page").get(0).requestFullScreen();
+}e}else if{document.body.mozRequestFullScreen) {  ....etc
+
+MOBILE ENVIRONMENTS
+bubbleshooter can be loaded as is in mobile env and work. 
+But mobile env has differences.
+
+mobile often has touchscreens: so uses touchstart and touchend events.
+desktop env will typically ignore mobile events.
+can use mousedown and mouseup in place of touchstart and ..end.
+for bubbleshooter, bubble would fire on mousedown or when user touches screen.
+	to do so,
+	$("#game").bind("mousedown", clickGameScreen);
+	"mousedown" replaces "click" here.
+
+note mobile browsers wait a few hundred milliseconds to determine whether the user double-taps, which is a zoom operation, to make absolutely sure that the user intends a single click. 
+
+also, on touchscreens, two or more simultaneous touches from two  or more different screen areas can be processed.  not so for only one mouse.
+
+SCALING
+zooming can be restricted via meta tags. for instance, probably sont want players zooming into the game area at all, double-tap or not. 
+
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+above, page is rendered at 1:1 scale, and viewport width set to default for the device. 
+apple originally introduced <meta> tag.  good start = reference = for various options:
+https:..developer.apple.com/library/ios/documentation/Appleapplications/Reference/SafariWebContent/UsingtheViewport/UsingtheViewport.html
+HOWEVER, not standardized. lots of trial and error to see how it works in practice.
+defs:
+	user-scalable : can be yes or no. allows or diables zooming
+	initial-scale : a decimal number specifying the zoom factor at which to draw the viewport
+	maximum-scale: a decimal representing the max zoomabloe scale to allow the user to zoom to
+	minimum-scale: a decimal representing the minimum zoomable scale to allow user to zoom to.
+	width, height : specify this in pixels, or use device-height/width.
+
+while can set absolute heights and widths, will have likely problems wiht image scaling and aspect ratio.  trying to draw 760 pixels on screen that is made up of 1024 pixels means some aliasing will need to occur.  Lots of variance in devices' aspect ratios.
+
+DEPLOYING AS NATIVE APPLICATION (so user downloads the code/app to local device to play)
+two ways: 
+1) write own wrapper osing Objective-C, Java, or other target platform language,or 
+2) use an existing wrapper service.
+The latter is recommended.  
+
+native app means an internet connection wont be required to play, once downloaded.  but even if needed, as for a multiplayer game, a natvie app will have faster startup times and save on bandwidth costs.
+
+MEMORY MANAGEMENT
+browsers run through periodic sweeps to clear memory, shich can cause jittery animations, unresponsive interfaces, and general interruption of game flow. running out of memory is not usually a pressing concern, today.
+ 
+minimizing memory usage for Javascript is larger subject. browser vendors publish papers on how to get the best out of their systems. ref:
+https://developer.mozilla.org/en-US/docs/web/JavaScript/Memory_Management/
+excellent intro, by Addy Osmani (chrome engineer):
+http://www.smashingmagazine.com/2012/11/05/writing-fast-memory-efficient-javascript/
+
+key to memory issues is identifying them in the first place. key to maintaining fast animations is to test and iterate. ifre coding techniques notice intermittent slowdowns and animation freezes that are difficult to reproduce, likely a memory issue. memory fixes occasionally require coding techniques somewhat at odds with sriting readable, reusable code.
+
+browser tools are constantly evolving  . search of each browser docs should help, such as chrome's:
+https://developer.chrome.com/devtools/docs/javascript-memory-profiling/
+
+where to start:
+Chrome:	open Developer Tools, click Profiles, select Take Heap snapshot, click Take Snapshot
+..to examine objects in mem, including DOM elements
+
+Firefox: use Firebug and other plug-ins to examine memory objects. 
+can also type , about:memory, into address bar for snapshot
+
+IE: open developer tools, select Memory tool.
+
+SPEED OPTIMIZATON:
+each time you add or change an element in the DOM, the browser has to work out what to draw and where to draw it.  HTML docs originally designed as flowing, text-based docs. browser assumes this. processing DOM elements take time for orig HTML processing. and DOM elements can be complex. But not for Canvas techniques.  but changing the properties of the canvas element, such as its position or transparency, rather than pixels within it, is just as expensive as changing any othe DOM element. 
+
+in Chrome, see how much time browser spends painting a scene:
+press F12, to open developer tools
+navigate  to timeline tab.
+click Record in the bottom control bar,
+reload the game, 
+then click the Events bar at the top to see a view of the browser events.
+all paint events shoulde be ighlighted in green on your screen
+Can use this timeline tool to identify when paint events happen ande minimize them to speed up your game's rendering.  but different browsers will repaint at different times. 
+so always have to test, test , test.
+In general, minimizing DOM manipulation is key to minimizin paint operations. search for articles on minimizing browser reflow and browser paint operations.
+
+SECURITY
+only way to make a game secure is to have all game logic processed by the server. Not practical.  But right for financial transactions, etc. 
+
+for games, OBFUSCATION is often good enough
+the more pain for hackers, the less likely they persist.
+1)simplest, run code thru  a minifier before packaging it for live environment. Often shorten all long variable names, and eliminate white space.  
+  sidenote: minimization speeds up code downloarding.  should always consider minimizing JS code in all apps.
+  Google released tool called the Closure compiler.  Great tool. attempts optimizing code, (rewriting in places), , analyzes code, raises errors, keeps track of scope.
+ref/download: https:..developers.google.com/closure/compiler/.  once have access, paste the Closure Compiler in the JavaScript code that you want to complile, and then copy the output.  of course, make copy of your original code.
+
+2) make use of private variables. hackers have difficulty without using Firebug, etc, to add breakpoint within the object, and even more trouble if code is minified and obfuscated.
+
+3) Validate with Checksums
+simplest technique just encode a value so there is at least some check that the number is correct. at least cheaters now need to read and understand JS code.
+example, if passed highScore to server, we could POST something like this:
+{
+	highScore : 9825,
+	check : 21
+}
+the value 21 is 9825 modulus 129, where 129 chosen as big enough to create a range of check values but also smaller than likely high scores.
+
+can also use common approaches like hash funcions...but disadvantage is hackers often recognize hte structure well enough to understand.
+
+Further IDEAS
+bubbleshoot:
+add more bubble colors to later levels.
+create grid patterns in different sizes and lay
+implement side walls for bubbles to bounce off
+
+other game types to try :
+Match-3  , 
+such as bejeweled and candy crush
+solitaire.  simpler grahpically, but pose enough user interface and game logic challenges that worht a go thru.
+platform game. sort of like ruby warrior i think. 
+simple physics game: like, Angry Birds, was a huge hit. basic mechanics simple to recreate. angry birds uses a physics engine called Box2D: free version available for JS called Box2dWeb (https://code.google.com/p/box2dweb/   .  recommends Seth ladd's tutorial for a step-by-step intro to the library: http://blog.sethladd.com/2011/08/box2d-orientation-for-javascript.html
+
+Join a Team: search meetup.com
+
+Set up a web SERVER
+varies by operating system.
+Apache , http://httpd.apache.org/  , works for most system configurations
+
+CH 6. CANVAS
+note addition to index.html Modernizr
+  adds renderer.js  and sprite.js
+  which run instead of previous code, with fallback (canvas, css, jquery), in order.
+
+to add a CANVAS element in HTML , for example:
+  <canvas id="game_canvas " width="1000" height="620"></canvas> 
+the above line defines the actual size of the canvas element,
+but not the actual size which will appear on the page.
+The latter should be specified by CSS, for example:
+and typically be the same size as the canvas element.
+For example:
+  .game_canvas
+  {
+    width: 1000px;
+    height: 620px;
+  }
+
+The canvas is rendered all at once, as a single image.
+
+document.getElementbyId("game_canvas").getContext("2d");
+or jquery:
+$("#game_canvas").get(0).getContext("2d");
+  get(0) retrieves first object in jQuery's set
+
+draw image: use drawImage method of the context object:
+drawImage(imageObject,x,y);
+
+or jquery
+$("#game_canvas").get(0).getContext("2d").drawImage(imageObject,x,y);
+
+clear pixels with clearRect method.
+methodology is to translate the canvas as a whole (center point)
+  always rotated around center point=default=top left i think
+  so first move it.
+  rotate opposite direction from intended, because canvas is rotated
+  add object
+  rotate back
+  translate center back.
+
+restore function will translate back to original state (both rotation and center)
+implement bubble state machine.
+
+bubbleshooter creates a class for each rendering method ( 2 rendering methods)
+  thus, creates identical methods and properties so they can be interchanged.
+
+altenatively, could create single rendering class, 
+which branches depending on rendering method
+  the new class may act as just a wrapper for a different class for each method.
+
+use different bubble states: 
+fired, current_bubble, popping, etcs
+
+for Canvas, using setTimeout not ideal
+use setEimout ot time animations in jquery.kaboom.js and when we trigger frame updates in the canvas version oof Bubble Shooter.  timeout value of 40 ms leads to 25 framse per second.
+
+downside: if browser is busy  for too long, might take a lot longer and user will start to notice.
+Html 5 INTRODUCED requestAnimationFrame, as an alternative to setTimeout, which is better suited for animation.
+  broawser calls the function passed to request..Frame whenever it is ready to draw a new update. the time between updates might be much faster (or slower) than 40 ms, but at least we know that were neither making a processing logjam worse nor having the system sit idle when we could spend extra cycles smoothing the animations.
+
+must think differently for req..frame.  currently before setTimeout runs, we tell bowser how long to wait.
+with req..frame, we need to find out how mnay ms have elapsed and then adjust our animation step size.
+modernize helps us build the setTimeout fallback.
+
+
+
+
+
+PROTOTYPE usage : when/why to use..also, 
+see my file, sprite02.js, for reference.
+
+defining a method via "prototype", as follows
+  Sprite.prototype.removeClass = function (){}; 
+causes the removeClass method to be added to just the prototype object of Sprite.
+Thus it uses less memory than directly adding the method within the Sprite object,
+   per "this.removeClass...", which would add it to every instance of Sprite formed by
+   var spriteInstance = new Sprite..
+
+further more, using jQuery's extend method, instead of "prototype", such as
+$.extend(Sprite.prototype, {
+  removeClass: function() {
+  },
+/* 
+ * Add a class to $el
+ *
+ * @param $el The element to add the class to
+ */
+  addClass: function($el) {
+  }
+});
+
+SYNTAX/INVOCATION rule:
+  setTimeout(
+    complete(), duration);
+above code is an error: the parenthesis after "complete"
+would case the immediate invocation of the 'complete' function, 
+whereas setTimeout by definition is meant ot invoke it after a time lapse = duration. 
+
+Web Storage vs Cookies
+localStorage.setItem(key,value);
+operates on a per browser basis. stored in users own browser.
+local storage persists across sessions.
+Session storage is just for a session.
+
+frame rate.
+find out how many ms have elapsed, than adjust animaton step size (movement distance,etc)
+
+Sound.
+<audio src="sounds.mp3" autoplay></autoplay>  HTML5
+embeds sound file. but cant stop.
+
+JS:
+var sound = new Audio("sounds.mp3");
+sound.play();
+...
+sound.stop(); ...will stop it early , if needed.
+can play multiply files in parallel.
+
+to pop 20 bubbles, need  20 sound objects to play them
+
+for Bubbleshoot, will wrap the HTML5 audio functionality in our own code, which will prevent an error from being thrown in browsers that dont support HTML5 audio.
+
+CHAPTER 5:
+Next CSS transitions and Tranformations. ch 5
+CSS has a transition  style property
+frees up cpu time...runs in parallel
+
+simple transitions include
+  translations by x,y, or x,y,z
+  scaling by dimensions along x,y,z axes
+  rotating in place by an angle along any axes
+  skewing along the x or y axis
+  adding 3D perspective.
+
+the code falls back to previously written code 
+if csstransitions not enabled in browser (via Modernizr)
+
+disadvantages:
+csstransitions more cumbersome as add more animations to single element.
+also, movement must be in a straight line
+once set in motion, impossible to interrogate and change.
+  compare with jQuery animation which we could call stop method after 1000ms 
+
+Ch 4
+FETCHING BUBBLES
+retrieve set of bubbles surrounding a bubble
+  also must create function that retrieves a bubble at  given row,col pair.
+  also, use bubble.push
+  each bubble stores its own coords, so dont need to sort array or position info.
+
+CREATE MATCHING COLOR GROUPS
+write function, getGroup, to return groups of same color as 1st bubble.
+ this recursive function will take 2 params: bubble, and object to store group's bubbles
+ the object will store bubbles in two arrays added as properties:
+   1) as linear array "list", and 2) array indexed by row and column
+     latter so can check if bubble already added there for this group.
+     can use return function to return early.
+figure out where to call this method.
+
+POPPING BUBBLES
+note jQuery each method:  $.each(object, function)
+create and figure out where to call popping method, popBubbles
+1st, update state,
+2nd, update display
+above order is common order and separation for game code
+
+method receives as one of its parameters, a delay time.
+  the method adds 200ms to this delay time before popping
+    in order to give bubbles time to animate their popping
+  the initial delay passed in is taken from the fired bubble's
+    travel time.  thus, bubbles wont be removed from the screen
+    until player has had chance to see the bubbles pop!
+
+of course, need to create popBubbleAt method. (removes bubble at coords passed in)
+
+POPPING ANIMATION WITH CSS
+arrange to pop bubbles individually, spaced at 60ms
+  will cause a change to popBubbles method
+create animatePop method (figure out where, too)
+  use:
+   ...getSprite().css(Modernizr.prefixed("transform"), "rotate(" + (Math.
+     random() * 60) + "deg)");
+  also specifically remove the Sprite from the bubble
+
+"
+hard-coding an animation this way is not very scalable, but BubbleShooter has only one sprite with three frames to display. Therefore, we can avoid writing a generic function, which is the reason we use a sequence of setTimeout calls instead. When we implement the same animation using canvas rendering, you'll see an example of how to code an animation that is more reusable.
+"
+
+at approximately 20 frames per second, the resulting animation frame rate is fairly poor. Professional game should have a frame rate of three times that number.  but principle of shifting a background image is same, regardless.
+
+RELOAD game to see bubbles pop!
+
+ORPHANED GROUPS.
+figure out how to identify.
+change getGroup to accept a 3rd parmeter, differentColor, which
+  if true, skips over the type check.
+name function, findOrphans, returning "orphaned", an array.
+use 30ms per bubble as delay addition before dropping bubbles from board.
+animate each bubble as it drops down screen: use 1000mss
+
+EXPLODING BUBBLES
+do this before they drop off screen via orphaning
+use jQuery PLUG-IN 
+  ref:http:..learn.jquery.com/plugins/basic-plugin-creation/
+make newfile, jquery.kaboom.js, add it to Modernizr.load call
+this file nameing convention informs others glancing in 
+  your scripts folder that this file is a jQuery plug-in.
+
+in ..kaboom.js, first register the method, name it kaboom:
+(function(jQuery){
+  jQuery.fn.kaboom = function(settings)
+  {
+  };
+})(jQuery);
+this above structure enables calls of the form $(...).kaboom(), including
+  passing an optional settings parameter.
+call to kaboom will be inside dropbubbles..This is popOrphans in my code.
+  ..and remove the animate calls (that animate their dropping)
+call function kaboom by:
+  bubble.getSprite().kaboom();
+this method only operates on jQuery objects.  
+it will have no knowledge of the game objects and 
+will work only with DOM elements,
+making the plug-in reusable in future games.
+
+within kaboom:
+array stores all objects, adding one each time kaboom gets called
+when bubble stops moving, it removes itself from this list ,'toMove'.
+thus a single setTimeout loop can be run that updates positions of all exploding bubbles
+It also adds default params for
+  "gravity" and distance bubble falls ,"maxY".
+contains two main loops:
+   jQuery.fn.kaboom, and moveAll...the former calls the latter.
+jQuery.fn.kaboom:
+
+jQuery.fn.kaboom = function9settings){
+ var config = $.extend({}, defaults, settings);
+..
+
+  the above syntax creates an object with defaults set in the parent definition (the defaults variable) and overrides these settings with any found in the object that's been passed. It also adds any new name/value pairs to the object that kaboom will act on.
+
+setTimeout within is set to run every 40ms.  
+  therefore, we count the frame rate as 25 per second.
+if computer is underpowered, or just busy, 
+and the delay between frames becomes slower than this,
+poor animation quality may result. 
+Later, learn how to produce constant speed animation, regardless of CPU power.
+
+Next CSS transitions and Tranformations. ch 5
+
+
+
+
+finish Ch 3.
+TO CONTINUE for code entry: with section REACTING TO COLLISIONS, P63
+1st) check for a collision.
+	if collision, move bubble to its collision point
+	  and modify the travel time for the bubble accordingly
+	if one doesnt occur, bubble fires offscreen
+	AMEND clickGameScreen function accordingly
+	can RELOAD game here for results
+	  but bubble just sticks where it hits
+	  AND bubbles pile up, 
+	  and new bubbles dont collide with previously fired bubbles
+
+so
+2) Add fired bubble to the board state in correct row and col 
+	note: passing col and row info to bubble object, so add this ability!
+	can RELOAD game here for results
+3) Upon collision, lock fired bubble into "tidy" grid position (exact grid center)
+	add a complete callback function to the jQuery animate call of the sprite.
+	  jQuery's animate function already has this "complete" property available,
+	  just like "duration" and "easing"
+	  put the positioning code in this function.
+	  note, getRow will return null if no collision occurs.
+Can RELOAD game now, i believe.
+Next after the above: popping and bubble animate display, Chapter 4.
+
+anything written above: after Penticton, 2015. June 29
+
+using Console of Browser for writing JS code
+  in Chrome, 
+    click on triple bar top right of window, etc
+    or ctl-shift-j
+   
+    then to enter multi-line instruction,
+      use shift-Enter       
+
+before Penticton, 2015:
+in index html, add notes to,
+when find out how to add html comments!!
+
+so inside header (std html notes here)
+the following links up the named style sheet that lives in folder _css
+<link href="_css/xxx" rel="stylesheet">
+
+the following links up the name javascript file
+<script src="_js/modernizr.js"></script>
+
+Modernizr defines methods.  "load" is one.
+it loads files into the app:)
+its load method has (i assume among others)
+properties "load" and "complete".
+
+the complete property enables a function to be defined
+upon the completion of the load property,
+whether or not load returns an error.
+
+in bubbles case here, in loading jquery,
+if load is successful, the window.JQuery object will exist.
+if not, then the function will load jQuery
+from apps copy of it in _js folder.
+
+Modernizr.load can accept the following argument types:
+  1) a single file (as a string),
+  2) an object with name/value pairs, or
+  3) an array containing a set of either strings or objects.
+
+in our bubble up, we use modernizr to conditionally
+load jquery from googleapis, which may have a server closer than ours.
+if not, then ours is loaded:
+(we downladed jquery and put it in the _js folder)
+
+note.
+						Modernizr.load("_js/jquery-1.11.2.min.js");
+is the same as
+						Modernizr.load({load : "_js/jquery-1.11.2.min.js"});
+
+Modernizr.load can load multiple files, via an arrray:
+
+Modernizr.load([
+{},
+{}]);

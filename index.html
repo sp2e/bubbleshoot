@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<!--  myBubbleShoot  -->
+<html lang="en-US">
+<head>
+	<meta charset="utf8">
+	<title>Bubble Shoot</title>
+	<link href="_css/main.css" rel="stylesheet">
+	<link href="_css/game.css" rel="stylesheet">
+	<script src="_js/modernizr.js"></script>
+	<script>
+		/*
+			Modernizer is a javascript library, 
+		used to load in all of the JS files the game needs.
+			Modernizer also makes easier the checking for browser features.
+			With Modernizer, one can trigger functions to run 
+		immediately after a script is loaded 
+		rather than waiting until the entire page, 
+		including HGML, and images, has loaded.
+			Modernizer enables "conditional loads" of files.
+			Modernizer actually uses another library called yepnope.js 
+		for its script-loading functionality. (see http://yepnopejs.com/).
+			In downloading Modernizer, features are individually enabled or not.
+		to minimize the code. The following features were selected for this game:
+				CSS Transitions (under CSS3)
+				Canvas and HTML5 Audio (under HTML5)
+				Modernizr.load (under Extra)
+				Modernizr.prefixed (under Extensibility)
+		*/
+		Modernizr.load([
+		/*  first try to download google's jquery
+			1) google often has a server closer to client than the server hosting your app
+			2) often faster than your server, which often limit number of connections 
+			that are open to download files in parallel, etc
+			3) frequency of use of google's jquery often means user already has a cached copy
+		*/
+			{
+
+			load:				
+		/*	"_js/jquery-1.11.2.min.js", */
+				"//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.js",
+				complete: function () {
+					if(!window.jQuery){
+						Modernizr.load("_js/jquery-1.11.2.min.js");
+
+			/* above line equivalent to:
+				Modernizr.load({load: "_js/jquery-1.11.2.min.js"});
+			*/				
+					}
+				}
+
+			},
+			"_js/ui.js",
+			"_js/bubble.js",
+			"_js/board.js",
+			"_js/collision-detector.js",
+			"_js/jquery.kaboom.js", //file naming convention informs others this = jquery plug-in
+			//Modernizr tests for canvas capability, and loads  appropriately
+			"_js/sounds.js",
+			{
+				test: Modernizr.canvas,
+				yep: ["_js/renderer.js","_js/sprite.js"] 
+			},
+			{
+			load : "_js/game.js",
+
+			/* 	now if file is loaded (but images, etc, may still not be downloaded)
+				can enable user to start a game instead of waiting for downloads of all game images, etc
+
+				below, "$(function(){...." 
+				represents shorthand for the JQuery function where a function is also passed in,
+				which jQuery stores to run once th DOM is ready to be manipulated. READ BELOW for
+				explanation of case where a string is passed in (jQuery intreprets as "selector")
+
+				So below, the jQuery function is allowed to begin after game.js completes loading.
+				So, code for the game can begin to run without waiting for other game assets, 
+				such as images and sounds, to finish loading. Browsers, and versions of each browser,
+				vary in how one determines that the DOM is ready, 
+				and jQuery smoothes over any browser inconsistencies.
+
+				here, first an instance of the Game "class" is created by "var game =..",
+				and then, the public init() method is called. anything done inside "init"
+				will not happen until after jQuery has loaded and the DOM is ready to be 
+				worked upon.
+
+				this method of creating the var "game", an instance of the Game "class",
+				provides "closure".  the "game" instance lives on, along with the variables 
+				and methods defined within it. the outside world can still use these methods 
+				to operate on the instance and fetch data from within it.  
+
+				SELECTOR examples for jQuery function:
+				js code for selecting DOM node (here selecting our "game" div element) with an ID:
+					var element = document.getElementById("game");
+				now
+				  element.getAttribute("id") will return the string, "game"
+				same thing using jQuery selector:
+					$("#game").attr("id");
+				explained:
+					Nearly all of jQuery is used to manipulate DOM elements.
+					Exact jQuery equivalent of 'var element = document.getElementById("game");' is
+						var element = jQuery("game").get(0);
+					The get(0) function call retrieves the DOM object from within the jQuery object.
+					"(0)" represents the first item in the jQuery object.
+					Shorter version is
+						var element = $("#game").get(0);  //$ represents the jQuery function
+					the "#" specifies an ID element, just as with CSS.
+				 	$("game") returns the jQuery objec containing a reference to the DOM node.
+				 	
+				 	A main advantage is that jQuery returns objects with cross-browser metods 
+				 	that abstract away a lot of the hard work of DOM manipulation.
+				 	jQuery objects let us query the DOM for various CSS properties, such as :
+				 		var top = $("game").css("top");  //fetches div's top position
+				 		var width = $("game").width();	 //fetches width
+				 		var divs = $("div");  //returns jQuery object containing all div tags on page
+				 	reference for more: http://api.jquery.com/
+			*/
+			complete: function(){
+				$(function(){
+					var game = new BubbleShoot.Game();
+					//MyCanvas :  inside game.init,
+					//must wait for sprite sheet image to load
+					//before performing the init() actions		
+					game.init();
+				})
+			}
+		}]);
+		/* note all file paths based on one main game folder, (call it BubbleShooter for instance). 
+		the files also follow a MVC approach.
+		game.js contains the single controller needed for the game
+		UI functions are contained in the ui.js file.
+		UI functions just determine the appearance of game objects and displays. 
+		UI functions dont change game state.
+		Some of the game's objects are the game board and the bubbles.
+		*/
+	</script>
+</head>
+<body>
+	<!--  
+	entire game runs on this single HTML page.
+	"page" div constrains the area in which the game happens.
+
+	if ever need to center the game 
+	or move to fit it into unusual screen aspect ratios
+	need only change the position of this wrapper element = "page" div
+	-->	
+	<div id="page">
+		<div id="top_bar">
+			<div id="top_level_box" class="top_bar_box">
+				<div id="top_level_label">Level:</div>
+				<div id="level">1</div>
+			</div>
+			<div class="top_bar_box">
+				<div id="top_score_label">Score:</div>
+				<div id="score">0</div>
+			</div>
+			<div class="top_bar_box">
+				<div id="top_score_label">High Score:</div>
+				<div id="high_score">0</div>
+			</div>
+			
+		</div>
+
+		<div id="game">
+			<!--  
+			canvas element not specified here.
+			it gets added dynamically by BubbleShoot.Renderer()	
+			-->					
+			<div id="board"></div>
+			<div id="bubbles_remaining"></div>
+  	</div>
+  	<div id="footer_bar"></div>
+  	<div id="start_game" class="dialog">
+	  	<div id="start_game_message">
+				<h2>Start a new game</h2>
+		  </div>
+		  <div class="but_start_game button">
+			 	New Game
+		  </div>
+	  </div>
+  	<div id="end_game" class="dialog">
+	  	<div id="end_game_message">
+				<h2>Game Over</h2>
+				<div id="final_score">
+					<span>Final Score:</span>
+					<span id="final_score_value"></span>
+				</div>
+				<div id="new_high_score">New High Score!</div>
+				<div id="level failed" class="level_failed">Level Failed!</div>
+				<div id="level complete" class="level_complete">Level Complete!</div>								
+		  </div>
+		  <div class="but_start_game button">
+		  	<span class="level_complete">Next Level</span>
+		  	<span class="level_failed">New Game</span>
+		  </div>
+	  </div>
+  </div>
+</body>
+</html>
